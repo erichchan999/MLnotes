@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 def func(x,y):
-    return 100*(y-x^2)^2 + (1-x)^2
+    return 100*(y-x**2)**2 + (1-x)**2
 
 # create two one-dimensional grids using linspace
 x = np.linspace(-5, 5, 50)
