@@ -1,9 +1,7 @@
 import numpy as np
 
-x=10
-y=-10
 
-def hes(x, y):
-    return np.array([[1200*(x**2)-400*y+2, -400*x], [-400*x, 200]])
-
-print(hes(x, y))
+a=np.array([[1, 2, 3]]).flatten()
+b=np.array([[3, 4], [5, 6]])
+print(np.outer(a, np.transpose(a)))
+# print(5*a)
