@@ -1,0 +1,98 @@
+-----------------------------------------------------------
+
+Base decision tree:
+
+tree = DecisionTreeClassifier(random_state=0, class_weight='balanced')
+--- Confusion matrix ---
+         Predicted NO    |   Predicted YES
+Actual NO       97              137
+Actual YES      21              369
+--- F1 score ---
+0.8236607142857142
+--- Precision score ---
+0.7292490118577075
+--- Recall score ---
+0.9461538461538461
+
+-----------------------------------------------------------
+
+Pre-pruned decision tree:
+
+hyperparams = {'min_samples_leaf':[1, 2, 4, 8, 16, 32], 'min_samples_split':[2, 4, 8, 16, 32], 'max_depth':[1, 2, 4, 8, 16, 32, None]}
+tree = RandomizedSearchCV(tree, hyperparams, scoring='f1', n_jobs=4, cv=5, random_state=0)
+--- Confusion matrix ---
+         Predicted NO    |   Predicted YES
+Actual NO       100              134
+Actual YES      20              370
+--- F1 score ---
+0.8277404921700223
+--- Precision score ---
+0.7296222664015904
+--- Recall score ---
+0.941025641025641
+--- Best params ---
+{'min_samples_split': 2, 'min_samples_leaf': 1, 'max_depth': 16}
+
+-----------------------------------------------------------
+
+Post-prune decision tree:
+
+tree = DecisionTreeClassifier(random_state=0, class_weight='balanced') 
+path = tree.cost_complexity_pruning_path(train_data, train_labels)
+hyperparams = {'ccp_alpha':path.ccp_alphas}
+tree = RandomizedSearchCV(tree, hyperparams, scoring='f1', n_jobs=-1, cv=5, random_state=0)
+--- Confusion matrix ---
+         Predicted NO    |   Predicted YES
+Actual NO       106              128
+Actual YES      25              365
+--- F1 score ---
+0.826727066817667
+--- Precision score ---
+0.7403651115618661
+--- Recall score ---
+0.9358974358974359
+--- Best params ---
+{'ccp_alpha': 0.0006915270646404609}
+
+-----------------------------------------------------------
+
+Random forest:
+
+tree = RandomForestClassifier(n_estimators=100, max_features='sqrt', criterion='gini', class_weight='balanced', n_jobs=-1, random_state=0)
+hyperparams = {'max_depth':[4, 8, 12, 16, 20, 24]}
+tree = GridSearchCV(tree, hyperparams, scoring='f1', n_jobs=-1, cv=5)
+--- Confusion matrix ---
+         Predicted NO    |   Predicted YES
+Actual NO       114              120
+Actual YES      10              380
+--- F1 score ---
+0.853932584269663
+--- Precision score ---
+0.76
+--- Recall score ---
+0.9743589743589743
+--- Best params ---
+{'max_depth': 8}
+
+-----------------------------------------------------------
+
+Gradient boosting decision tree:
+
+neg_over_pos = (train_labels.size - np.sum(train_labels)) / np.sum(train_labels)
+tree = XGBClassifier(n_estimators=100, scale_pos_weight=neg_over_pos, random_state=0, tree_method='gpu_hist')
+hyperparams = {'max_depth':[8, 16, 24], 'subsample':[0.1, 0.5, 1.0]}
+tree = GridSearchCV(tree, hyperparams, scoring='f1', n_jobs=4, cv=5)
+--- Confusion matrix ---
+         Predicted NO    |   Predicted YES
+Actual NO       89              145
+Actual YES      3              387
+--- F1 score ---
+0.8394793926247288
+--- Precision score ---
+0.7274436090225563
+--- Recall score ---
+0.9923076923076923
+--- Best params ---
+{'max_depth': 8, 'subsample': 0.5}
+
+-----------------------------------------------------------

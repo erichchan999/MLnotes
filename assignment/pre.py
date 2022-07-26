@@ -2,7 +2,8 @@ import os
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import cv2 
+import cv2
+from sklearn.utils import shuffle
 
 base_dir = 'chest_xray/'
 
@@ -17,47 +18,15 @@ test_pos = test_dir + 'PNEUMONIA'
 val_neg = val_dir + 'NORMAL'
 val_pos = val_dir + 'PNEUMONIA'
 
-train_pos = [train_pos+'/'+i  for i in os.listdir(train_pos) ]
-train_neg = [train_neg + '/' + i for i in os.listdir(train_neg) ]
+train_pos = [train_pos + '/' + i for i in os.listdir(train_pos)]
+train_neg = [train_neg + '/' + i for i in os.listdir(train_neg)]
 
-
-test_pos = [test_pos + '/' + i for i in os.listdir(test_pos) ]
+test_pos = [test_pos + '/' + i for i in os.listdir(test_pos)]
 test_neg = [test_neg + '/' + i for i in os.listdir(test_neg)]
 
 val_pos = [val_pos + '/' + i for i in os.listdir(val_pos)]
 val_neg = [val_neg + '/' + i for i in os.listdir(val_neg)]
 
-# --------------------------------------
-
-# plot number of positive and negative examples:
-
-# fig = plt.figure()
-
-# plt.bar("negative", len(train_neg),  color = 'g')
-# plt.bar("positive", len(train_pos), color = "r")
-# plt.title("Number of positive and negative examples in train set")
-# plt.show()
-
-
-# fig = plt.figure()
-
-# plt.bar("negative", len(val_neg),  color = 'g')
-# plt.bar("positive", len(val_pos), color = "r")
-# plt.title("Number of positive and negative examples in validation set")
-# plt.show()
-
-
-# fig = plt.figure()
-
-# plt.bar("negative", len(test_neg),  color = 'g')
-# plt.bar("positive", len(test_pos), color = "r")
-# plt.title("Number of positive and negative examples in test set")
-# plt.show()
-
-# print(len(train_pos)/ (len(train_neg) + len(train_pos)))
-
-
-# ------------------------------------------------------------
 print('---------------------------------------------------')
 
 # size of smallest image to rescale each image into
@@ -65,7 +34,7 @@ image_size = 127
 
 print('Building train data and train labels ...')
 
-train_full = train_pos + train_neg
+train_full = train_pos + train_neg + val_pos + val_neg # Combining given train and validation datasets, (do your own train/validation splits later)
 
 train_data = []
 train_labels = []
@@ -86,7 +55,7 @@ for train_img in train_full:
         print(f"{count} images processed")
     count += 1
 
-print('number of positive cases:', sum(train_labels))
+print('total number of images processed:', count)
 
 # ---------------------------------------------------
 print('---------------------------------------------------')
@@ -112,21 +81,29 @@ for test_img in test_full:
         print(f"{count} images processed")
     count += 1
     
-print('number of positive cases:', sum(test_labels))
+print('total number of images processed:', count)
 
 # ------------------------------------------
 print('---------------------------------------------------')
 
-# # convert to np arrays
+# convert to np arrays
 train_data = np.asarray(train_data)
 train_labels = np.asarray(train_labels)
 
 test_data = np.asarray(test_data)
 test_labels = np.asarray(test_labels)
 
-np.savetxt('train_data.csv', train_data, delimiter=',')
-np.savetxt('train_labels.csv', train_labels, delimiter=',')
-np.savetxt('test_data.csv', test_data, delimiter=',')
-np.savetxt('test_labels.csv', test_labels, delimiter=',')
+# Shuffle both train and test data
+train_data, train_labels = shuffle(train_data, train_labels, random_state=0)
+test_data, test_labels = shuffle(test_data, test_labels, random_state=0)
+
+np.save('train_data.npy', train_data)
+np.save('train_labels.npy', train_labels)
+np.save('test_data.npy', test_data)
+np.save('test_labels.npy', test_labels)
+
+# Note: Load the data like this -
+# train_data = np.load('train_data.npy')
+# train_labels = np.load('train_labels.npy')
 
 print('train data and test data saved to CSV files in cwd')
